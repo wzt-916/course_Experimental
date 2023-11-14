@@ -1,0 +1,102 @@
+#include<windows.h>
+#include<stdio.h>
+
+//窗口处理函数
+LRESULT CALLBACK MyWndProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM IParam);
+
+//入口函数
+int WINAPI WinMain(HINSTANCE hlnstance,HINSTANCE hPrevlnstance,LPSTR lpCmdLine,int nCmdShow)
+{
+	WNDCLASS MyWnd;//窗口类
+
+	MyWnd.cbClsExtra=NULL;//申请缓冲区
+
+	MyWnd.cbWndExtra=NULL;//申请缓冲区
+
+	MyWnd.hbrBackground=(HBRUSH)GetStockObject(BLACK_BRUSH);//(HBRUSH)(COLOR_WINDOW+3);//设置背景色
+
+	MyWnd.hCursor=LoadCursor(NULL,IDC_CROSS);//光标
+
+	MyWnd.hIcon=LoadIcon(NULL,IDI_QUESTION);//图标
+
+	MyWnd.hInstance=hlnstance;//实例句柄
+
+	MyWnd.lpfnWndProc=MyWndProc;//定义的窗口处理函数
+
+	MyWnd.lpszClassName="Hello";//窗口类名称
+
+	MyWnd.lpszMenuName=NULL;//菜单
+
+	MyWnd.style=CS_HREDRAW|CS_VREDRAW|CS_DBLCLKS;//风格
+
+	//对设计好的窗口类进行注册
+	RegisterClass(&MyWnd);
+
+	//创建窗口
+	HWND hWnd;
+	hWnd=CreateWindow("Hello","Windows编程",WS_OVERLAPPEDWINDOW,
+		               CW_USEDEFAULT,CW_USEDEFAULT,CW_USEDEFAULT,CW_USEDEFAULT,
+					   NULL,NULL,hlnstance,NULL);
+
+	//显示及其更新窗口
+	ShowWindow(hWnd,SW_SHOW);
+	UpdateWindow(hWnd);
+
+	//消息循环
+	MSG msg;
+	while(GetMessage(&msg,NULL,0,0))
+	{
+		TranslateMessage(&msg);//消息解释
+
+		DispatchMessage(&msg);//将消息发送到“窗口过程”
+	}
+
+	return 0;
+
+}
+LRESULT CALLBACK MyWndProc(
+  HWND hwnd,      // handle to window
+  UINT uMsg,      // message identifier
+  WPARAM wParam,  // first message parameter
+  LPARAM lParam   // second message parameter
+)
+{
+	switch (uMsg)
+	{
+	case WM_PAINT:
+		HDC hpaintDC;
+		PAINTSTRUCT ps;
+		hpaintDC=BeginPaint(hwnd,&ps);
+		TextOut(hpaintDC,255,50,"Hello World!",strlen("Hello World!"));
+		EndPaint(hwnd,&ps);
+		break;
+	case WM_CHAR:
+		char str[255];
+		sprintf(str,"char is %d", wParam);
+		MessageBox(hwnd,str,"按键响应",0);
+		break;
+	case WM_LBUTTONDOWN:
+		MessageBox(hwnd,"鼠标左键按下","鼠标响应",0);
+		HDC hDC;
+		hDC = GetDC(hwnd);
+		TextOut(hDC,255,100,"Hello World!",strlen("Hello World!"));
+		ReleaseDC(hwnd,hDC);
+		break;
+	case WM_CLOSE:
+		if (IDYES == MessageBox(hwnd,"真的要退出吗？","退出", MB_YESNO))
+			DestroyWindow(hwnd);
+		break;
+	case WM_DESTROY:
+			PostQuitMessage(0);
+		break;
+	case WM_RBUTTONDOWN:
+		SendMessage(FindWindow("CalcFrame",NULL),WM_SETTEXT,0,(LPARAM)"Hello!");
+//		SendMessage(FindWindow(NULL,"计算器"),WM_SETTEXT,0,(LPARAM)"Hello!");
+		SendMessage(hwnd,WM_SETTEXT,0,(LPARAM)"Hello!");
+		break;
+	default:
+		return DefWindowProc(hwnd,uMsg,wParam,lParam);
+	}
+	
+	return 0;
+}
